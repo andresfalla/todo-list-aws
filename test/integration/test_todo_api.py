@@ -30,8 +30,7 @@ class TestApi(unittest.TestCase):
         response = requests.post(url, json=data)
         json_response = response.json()
         print('Response Add Todo: '+ str(json_response))
-        jsonbody = response.json()
-        #jsonbody= json.loads(json_response['body'])
+        jsonbody= json.loads(json_response['body'])
         ID_TODO = jsonbody['id']
         print ('ID todo:'+ID_TODO)
         self.assertEqual(
@@ -59,10 +58,8 @@ class TestApi(unittest.TestCase):
         }
         response = requests.post(url, json=data)
         json_response = response.json()
-        #print('Response Add Todo: '+ json_response['body'])
-        print('Response Add Todo: '+ str(json_response))
-        jsonbody = response.json()
-        #jsonbody= json.loads(json_response['body'])
+        print('Response Add Todo: '+ json_response['body'])
+        jsonbody= json.loads(json_response['body'])
         ID_TODO = jsonbody['id']
         print ('ID todo:'+ID_TODO)
         self.assertEqual(
@@ -88,8 +85,7 @@ class TestApi(unittest.TestCase):
         response = requests.post(url, json=data)
         json_response = response.json()
         print('Response Add Todo: '+ str(json_response))
-        jsonbody = response.json()
-        #jsonbody= json.loads(json_response['body'])
+        jsonbody= json.loads(json_response['body'])
         ID_TODO = jsonbody['id']
         print ('ID todo:'+ID_TODO)
         self.assertEqual(
@@ -125,8 +121,9 @@ class TestApi(unittest.TestCase):
          "text": "Integration text example - Initial"
         }
         response = requests.post(url, json=data)
-        jsonbody = response.json()
-        print('Response Add todo: ' + str(jsonbody))
+        json_response = response.json()
+        print('Response Add todo: ' + json_response['body'])
+        jsonbody= json.loads(json_response['body'])
         ID_TODO = jsonbody['id']
         print ('ID todo:'+ID_TODO)
         self.assertEqual(
@@ -143,11 +140,9 @@ class TestApi(unittest.TestCase):
         }
         #response = requests.post(url, json=data)
         response = requests.put(url, json=data)
-        #json_response = response.json()
-        jsonbody = response.json()
-        print('Response Update todo: ' + str(jsonbody))
-        #print('Response Update todo: ' + str(json_response))
-        #jsonbody= json.loads(json_response['body'])
+        json_response = response.json()
+        print('Response Update todo: ' + str(json_response))
+        jsonbody= json.loads(json_response['body'])
         self.assertEqual(
             response.status_code, 200, "Error en la petición API a {url}"
         )
@@ -181,10 +176,8 @@ class TestApi(unittest.TestCase):
         }
         response = requests.post(url, json=data)
         json_response = response.json()
-        print('Response Add todo: ' + str(json_response))
-        #print('Response Add todo: ' + json_response['body'])
-        #jsonbody= json.loads(json_response['body'])
-        jsonbody = response.json()
+        print('Response Add todo: ' + json_response['body'])
+        jsonbody= json.loads(json_response['body'])
         ID_TODO = jsonbody['id']
         print ('ID todo:'+ID_TODO)
         self.assertEqual(
@@ -204,6 +197,6 @@ class TestApi(unittest.TestCase):
         response = requests.get(url)
         print('Response Get Todo '+ url+': '+ str(response))
         self.assertEqual(
-            response.status_code, 404, "Error en la petición API a {url}"
+            response.status_code,404, "Error en la petición API a {url}"
         )
         print('End - integration test Delete TODO')
