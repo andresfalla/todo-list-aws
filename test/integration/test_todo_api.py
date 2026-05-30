@@ -138,14 +138,10 @@ class TestApi(unittest.TestCase):
          "text": "Integration text example - Modified",
          "checked": "true"
         }
-        #response = requests.post(url, json=data)
         response = requests.put(url, json=data)
         json_response = response.json()
         print('Response Update todo: ' + str(json_response))
         jsonbody = json_response
-        #json_response = response.json()
-        #print('Response Update todo: ' + str(json_response))
-        #jsonbody= json.loads(json_response['body'])
         self.assertEqual(
             response.status_code, 200, "Error en la petición API a {url}"
         )
