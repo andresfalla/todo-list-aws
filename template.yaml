@@ -26,6 +26,13 @@ Globals:
         ENDPOINT_OVERRIDE: ""
     
 Resources:
+
+    TodoListApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: todo-list-aws
+      StageName: Prod
+
   
   CreateTodoFunction:
     Type: AWS::Serverless::Function 
@@ -37,12 +44,12 @@ Resources:
       Events:
         Create:
           Type: Api
-          Properties:
+          Properties: !Ref TodoListApi
             Path: /todos
             Method: post
   ListTodosFunction:
     Type: AWS::Serverless::Function 
-    Properties:
+    Properties: !Ref TodoListApi
       CodeUri: src/
       Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/LabRole"
       Handler: list.list
@@ -50,12 +57,12 @@ Resources:
       Events:
         Create:
           Type: Api
-          Properties:
+          Properties: !Ref TodoListApi
             Path: /todos
             Method: get
   GetTodoFunction:
     Type: AWS::Serverless::Function 
-    Properties:
+    Properties: !Ref TodoListApi
       CodeUri: src/
       Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/LabRole"
       Handler: get.get
@@ -68,7 +75,7 @@ Resources:
             Method: get
   UpdateTodoFunction:
     Type: AWS::Serverless::Function 
-    Properties:
+    Properties: !Ref TodoListApi
       CodeUri: src/
       Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/LabRole"
       Handler: update.update
@@ -81,7 +88,7 @@ Resources:
             Method: put
   DeleteTodoFunction:
     Type: AWS::Serverless::Function 
-    Properties:
+    Properties: !Ref TodoListApi
       CodeUri: src/
       Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/LabRole"
       Handler: delete.delete
