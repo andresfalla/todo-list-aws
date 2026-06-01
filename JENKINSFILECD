@@ -21,7 +21,7 @@ pipeline {
                         --no-confirm-changeset \
                         --no-fail-on-empty-changeset \
                         --capabilities CAPABILITY_IAM \
-                        --parameter-overrides StageName=production
+                        --parameter-overrides Stage=production
                 '''
             }
         }
