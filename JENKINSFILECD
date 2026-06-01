@@ -16,7 +16,7 @@ pipeline {
                     sam build
                     sam validate
                     sam deploy \
-                        --stack-name production-todo-list-aws \
+                        --stack-name prod-todo-list-aws \
                         --resolve-s3 \
                         --no-confirm-changeset \
                         --no-fail-on-empty-changeset \
