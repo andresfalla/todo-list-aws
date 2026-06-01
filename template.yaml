@@ -123,24 +123,25 @@ Resources:
 Outputs:
   BaseUrlApi:
     Description: "Base URL of API"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+    Value: !Sub "https://${TodoListApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
 
   CreateTodoApi:
     Description: "API Gateway endpoint URL for Create TODO"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/todos/"
+    Value: !Sub "https://${TodoListApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/todos/"
 
   ListTodosApi:
     Description: "API Gateway endpoint URL for List TODO"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/todos"
+    Value: !Sub "https://${TodoListApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/todos"
 
   GetTodoApi:
     Description: "API Gateway endpoint URL for Get TODO"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/todos/{id}"
+    Value: !Sub "https://${TodoListApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/todos/{id}"
 
   UpdateTodoApi:
     Description: "API Gateway endpoint URL for Update TODO"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/todos/{id}"
+    Value: !Sub "https://${TodoListApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/todos/{id}"
 
   DeleteTodoApi:
     Description: "API Gateway endpoint URL for Delete TODO"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/todos/{id}"
+    Value: !Sub "https://${TodoListApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/todos/{id}"
+
