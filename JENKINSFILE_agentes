@@ -1,0 +1,104 @@
+pipeline {
+    agent none
+
+    stages {
+
+        stage('Get Code') {
+            agent { label 'principal' }
+            steps {
+                git branch: 'develop',
+                    url: 'https://github.com/andresfalla/todo-list-aws.git'
+
+                // Guardamos el workspace para los otros agentes
+                stash name: 'workspace', includes: '**'
+            }
+        }
+
+        stage('Static Test') {
+            agent { label 'static' }
+            steps {
+                unstash 'workspace'
+
+                sh '''
+                    mkdir -p reports
+                    flake8 src --format=html --htmldir=reports/flake8
+                    bandit -r src -f html -o reports/bandit.html
+                '''
+            }
+            post {
+                always {
+                    publishHTML(target: [
+                        reportDir: 'reports/flake8',
+                        reportFiles: 'index.html',
+                        reportName: 'Flake8 Report'
+                    ])
+                    publishHTML(target: [
+                        reportDir: 'reports',
+                        reportFiles: 'bandit.html',
+                        reportName: 'Bandit Report'
+                    ])
+                }
+            }
+        }
+
+        stage('Deploy') {
+            agent { label 'principal' }
+            steps {
+                unstash 'workspace'
+
+                sh '''
+                    sam build
+                    sam validate
+                    sam deploy \
+                        --stack-name staging-todo-list-aws \
+                        --resolve-s3 \
+                        --no-confirm-changeset \
+                        --no-fail-on-empty-changeset \
+                        --capabilities CAPABILITY_IAM \
+                        --parameter-overrides StageName=staging
+                '''
+
+                // Guardamos workspace actualizado (por si SAM genera archivos)
+                stash name: 'workspace', includes: '**'
+            }
+        }
+
+        stage('Rest Test') {
+            agent { label 'rest' }
+            steps {
+                unstash 'workspace'
+
+                sh '''
+                    export BASE_URL="https://eslaln167j.execute-api.us-east-1.amazonaws.com/Prod"
+                always {
+                    junit 'result-rest.xml'
+                }
+            }
+        }
+
+        stage('Promote') {
+            when {
+                branch 'develop'
+            }
+            agent { label 'principal' }
+            steps {
+                unstash 'workspace'
+
+                withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'USER', passwordVariable: 'TOKEN')]) {
+                    sh '''
+                        echo "Promoviendo versión a master..."
+
+                        git config user.email "jenkins@local"
+                        git config user.name "Jenkins CI"
+
+                        git checkout master
+                        git merge develop --no-edit
+
+                        git push https://$USER:$TOKEN@github.com/andresfalla/todo-list-aws.git master
+                    '''
+                }
+            }
+        }
+
+    }
+}
