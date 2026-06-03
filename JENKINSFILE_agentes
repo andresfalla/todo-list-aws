@@ -1,0 +1,44 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Get Code') {
+            steps {
+                git branch: 'master',
+                    url: 'https://github.com/andresfalla/todo-list-aws.git'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    sam build
+                    sam validate
+                    sam deploy \
+                        --stack-name prod-todo-list-aws \
+                        --resolve-s3 \
+                        --no-confirm-changeset \
+                        --no-fail-on-empty-changeset \
+                        --capabilities CAPABILITY_IAM \
+                        --parameter-overrides Stage=production
+                '''
+            }
+        }
+
+        stage('Rest Test') {
+            steps {
+                sh '''
+                    export BASE_URL="https://eslaln167j.execute-api.us-east-1.amazonaws.com/Prod"
+                    pytest test/integration/test_todo_api.py -k "get" --junitxml=result-rest-cd.xml
+                '''
+            }
+            post {
+                always {
+                    junit 'result-rest-cd.xml'
+                }
+            }
+        }
+
+    }
+}
