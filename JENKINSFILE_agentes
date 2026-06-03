@@ -1,10 +1,13 @@
 pipeline {
-    agent any
+    agent { label 'principal' }
 
     stages {
 
         stage('Get Code') {
             steps {
+                sh 'whoami'
+                sh 'hostname'
+
                 git branch: 'master',
                     url: 'https://github.com/andresfalla/todo-list-aws.git'
             }
@@ -12,6 +15,9 @@ pipeline {
 
         stage('Deploy') {
             steps {
+                sh 'whoami'
+                sh 'hostname'
+
                 sh '''
                     sam build
                     sam validate
@@ -21,13 +27,16 @@ pipeline {
                         --no-confirm-changeset \
                         --no-fail-on-empty-changeset \
                         --capabilities CAPABILITY_IAM \
-                        --parameter-overrides Stage=production
+                        --parameter-overrides StageName=Prod
                 '''
             }
         }
 
         stage('Rest Test') {
             steps {
+                sh 'whoami'
+                sh 'hostname'
+
                 sh '''
                     export BASE_URL="https://eslaln167j.execute-api.us-east-1.amazonaws.com/Prod"
                     pytest test/integration/test_todo_api.py -k "get" --junitxml=result-rest-cd.xml
@@ -41,4 +50,5 @@ pipeline {
         }
 
     }
+}  }
 }
