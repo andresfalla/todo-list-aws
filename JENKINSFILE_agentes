@@ -6,10 +6,12 @@ pipeline {
         stage('Get Code') {
             agent { label 'principal' }
             steps {
+                sh 'whoami'
+                sh 'hostname'
+
                 git branch: 'develop',
                     url: 'https://github.com/andresfalla/todo-list-aws.git'
 
-                // Guardamos el workspace para los otros agentes
                 stash name: 'workspace', includes: '**'
             }
         }
@@ -17,21 +19,20 @@ pipeline {
         stage('Static Test') {
             agent { label 'static' }
             steps {
+                bat "whoami"
+                bat "hostname"
+
                 unstash 'workspace'
 
-                sh '''
-                    mkdir -p reports
-                    flake8 src --format=html --htmldir=reports/flake8
+                bat """
+                    mkdir reports
+                    flake8 src --output-file=reports/flake8.txt
                     bandit -r src -f html -o reports/bandit.html
-                '''
+                """
             }
             post {
                 always {
-                    publishHTML(target: [
-                        reportDir: 'reports/flake8',
-                        reportFiles: 'index.html',
-                        reportName: 'Flake8 Report'
-                    ])
+                    archiveArtifacts artifacts: 'reports/flake8.txt', fingerprint: true
                     publishHTML(target: [
                         reportDir: 'reports',
                         reportFiles: 'bandit.html',
@@ -44,6 +45,9 @@ pipeline {
         stage('Deploy') {
             agent { label 'principal' }
             steps {
+                sh 'whoami'
+                sh 'hostname'
+
                 unstash 'workspace'
 
                 sh '''
@@ -58,7 +62,14 @@ pipeline {
                         --parameter-overrides StageName=staging
                 '''
 
-                // Guardamos workspace actualizado (por si SAM genera archivos)
+                sh '''
+                    aws cloudformation describe-stacks \
+                        --stack-name staging-todo-list-aws \
+                        --query "Stacks[0].Outputs[?OutputKey=='BaseUrlApi'].OutputValue" \
+                        --output text > api.txt
+                '''
+
+                stash name: 'api', includes: 'api.txt'
                 stash name: 'workspace', includes: '**'
             }
         }
@@ -66,10 +77,23 @@ pipeline {
         stage('Rest Test') {
             agent { label 'rest' }
             steps {
-                unstash 'workspace'
+                bat "whoami"
+                bat "hostname"
 
-                sh '''
-                    export BASE_URL="https://eslaln167j.execute-api.us-east-1.amazonaws.com/Prod"
+                unstash 'workspace'
+                unstash 'api'
+
+                script {
+                    env.BASE_URL = readFile('api.txt').trim()
+                }
+
+                bat """
+                    echo BASE_URL=%BASE_URL%
+                    set BASE_URL=%BASE_URL%
+                    pytest test/integration --junitxml=result-rest.xml
+                """
+            }
+            post {
                 always {
                     junit 'result-rest.xml'
                 }
@@ -82,12 +106,13 @@ pipeline {
             }
             agent { label 'principal' }
             steps {
+                sh 'whoami'
+                sh 'hostname'
+
                 unstash 'workspace'
 
                 withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'USER', passwordVariable: 'TOKEN')]) {
                     sh '''
-                        echo "Promoviendo versión a master..."
-
                         git config user.email "jenkins@local"
                         git config user.name "Jenkins CI"
 
